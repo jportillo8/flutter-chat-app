@@ -1,8 +1,11 @@
+import 'package:chat/helpers/mostrar_alerta.dart';
+import 'package:chat/services/auth_service.dart';
 import 'package:chat/widgets/boton_azul.dart';
 import 'package:chat/widgets/custom_input.dart';
 import 'package:chat/widgets/labels.dart';
 import 'package:chat/widgets/logo.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class RegisterPage extends StatelessWidget {
   @override
@@ -48,6 +51,8 @@ class __FormState extends State<_Form> {
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+
     return Container(
       margin: EdgeInsets.only(top: 40),
       padding: EdgeInsets.symmetric(horizontal: 50),
@@ -72,11 +77,44 @@ class __FormState extends State<_Form> {
           textController: passCtrl,
         ),
         BotonAzul(
-            texto: 'Ingrese!',
-            onPress: () {
-              print(emailCtrl.text);
-              print(passCtrl.text);
-            })
+            texto: 'Crear Cuenta!',
+            onPress: authService.autenticando
+                ? null
+                : () async {
+                    print(nombreCtrl.text);
+                    print(emailCtrl.text);
+                    print(passCtrl.text);
+
+                    final registerOk = await authService.register(
+                        nombreCtrl.text.trim(),
+                        emailCtrl.text.trim(),
+                        passCtrl.text.trim());
+                    if (registerOk == true) {
+                      // TODO Conectar socket server
+                      Navigator.pushReplacementNamed(context, 'usuarios');
+                    } else {
+                      // final errorNombre;
+                      // final errorEmail;
+                      // final errorPass;
+                      // (registerOk['nombre'] != null)
+                      //     ? errorNombre = registerOk['nombre']['msg']
+                      //     : errorNombre = '*';
+                      // (registerOk['email'] != null)
+                      //     ? errorEmail = registerOk['email']['msg']
+                      //     : errorEmail = '*';
+                      // (registerOk['password'] != null)
+                      //     ? errorPass = registerOk['password']['msg']
+                      //     : errorPass = '*';
+                      // print(registerOk);
+                      // mostrarAlerta(context, 'Registro incorrecto',
+                      //     '$errorNombre  $errorEmail  $errorPass');
+                      (registerOk != null)
+                          ? mostrarAlerta(context, 'Registro Incorrecto',
+                              registerOk.toString())
+                          : mostrarAlerta(context, 'Registro Incorrecto',
+                              'Rellena todos los campos');
+                    }
+                  })
       ]),
     );
   }
